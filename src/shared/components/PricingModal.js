@@ -147,7 +147,7 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
                             <tr key={model} className="hover:bg-bg-subtle/50">
                               <td className="px-3 py-2 font-medium">{model}</td>
                               {pricingFields.map(field => (
-                                <td key={field} className="px-3 py-2">
+                                <td key={field} className="px-3 py-2 text-right">
                                   <input
                                     type="number"
                                     step="any"
