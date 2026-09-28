@@ -131,30 +131,30 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
                       {provider.toUpperCase()}
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
+                      <table className="w-full table-fixed text-sm">
                         <thead className="bg-bg-hover text-text-muted uppercase text-xs">
                           <tr>
                             <th className="px-3 py-2 text-left">Model</th>
-                            <th className="px-3 py-2 text-right">Input</th>
-                            <th className="px-3 py-2 text-right">Output</th>
-                            <th className="px-3 py-2 text-right">Cached</th>
-                            <th className="px-3 py-2 text-right">Reasoning</th>
-                            <th className="px-3 py-2 text-right">Cache Creation</th>
+                            <th className="px-2 py-2 text-center w-28 whitespace-nowrap">Input</th>
+                            <th className="px-2 py-2 text-center w-28 whitespace-nowrap">Output</th>
+                            <th className="px-2 py-2 text-center w-28 whitespace-nowrap">Cached</th>
+                            <th className="px-2 py-2 text-center w-28 whitespace-nowrap">Reasoning</th>
+                            <th className="px-2 py-2 text-center w-36 whitespace-nowrap">Cache Creation</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
                           {models.map(model => (
                             <tr key={model} className="hover:bg-bg-subtle/50">
-                              <td className="px-3 py-2 font-medium">{model}</td>
+                              <td className="px-3 py-2 font-medium truncate" title={model}>{model}</td>
                               {pricingFields.map(field => (
-                                <td key={field} className="px-3 py-2 text-right">
+                                <td key={field} className="px-2 py-1.5 text-center">
                                   <input
                                     type="number"
                                     step="any"
                                     min="0"
                                     value={pricingData[provider][model][field] || 0}
                                     onChange={(e) => handlePricingChange(provider, model, field, e.target.value)}
-                                    className="w-20 px-2 py-1 text-right bg-bg border border-border rounded focus:outline-none focus:border-primary"
+                                    className="w-full px-2 py-1 text-center bg-bg border border-border rounded focus:outline-none focus:border-primary"
                                   />
                                 </td>
                               ))}
