@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Card from "@/shared/components/Card";
+import ChartTooltip from "./ChartTooltip";
 
 const fmtTokens = (n) => {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -125,13 +126,8 @@ export default function UsageChart({ period = "7d", refreshKey }) {
               width={50}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: "var(--color-bg)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "8px",
-                fontSize: "12px",
-              }}
-              formatter={(value) => [cfg.formatter(value), cfg.label]}
+              cursor={{ stroke: "var(--color-border)", strokeOpacity: 0.6 }}
+              content={<ChartTooltip valueFormatter={cfg.formatter} metricLabel={cfg.label} />}
             />
             <Area
               type="monotone"

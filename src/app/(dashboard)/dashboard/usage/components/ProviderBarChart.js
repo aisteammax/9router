@@ -13,6 +13,7 @@ import {
   Cell,
 } from "recharts";
 import Card from "@/shared/components/Card";
+import ChartTooltip from "./ChartTooltip";
 
 const COLORS = ["#6366f1", "#14b8a6", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#10b981", "#f97316"];
 
@@ -82,13 +83,8 @@ export default function ProviderBarChart({ byProvider }) {
               width={44}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: "var(--color-bg)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "8px",
-                fontSize: "12px",
-              }}
-              formatter={(value) => [fmt(value), label]}
+              cursor={{ fill: "var(--color-bg-hover)", fillOpacity: 0.3 }}
+              content={<ChartTooltip valueFormatter={fmt} metricLabel={label} />}
             />
             <Bar dataKey={viewMode} radius={[4, 4, 0, 0]}>
               {chartData.map((_, i) => (
