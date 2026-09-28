@@ -31,6 +31,9 @@
   /* Surfaces & backgrounds (light) */
   --color-bg: #FDFAF6;
   --color-bg-alt: #F7F3EE;
+  --color-bg-base: #FDFAF6;
+  --color-bg-subtle: #F7F3EE;
+  --color-bg-hover: #EFEAE2;
   --color-surface: #ffffff;
   --color-surface-2: #f4f4f5;
   --color-surface-3: #e7e7e9;
@@ -88,6 +91,9 @@
   /* Surfaces (dark - Claude-like neutral warm) */
   --color-bg: #1a1a1a;
   --color-bg-alt: #1F1F1E;
+  --color-bg-base: #1a1a1a;
+  --color-bg-subtle: #232323;
+  --color-bg-hover: #2a2a2a;
   --color-surface: #262626;
   --color-surface-2: #303030;
   --color-surface-3: #3a3a3a;
@@ -154,6 +160,9 @@ select {
   /* Semantic */
   --color-bg: var(--color-bg);
   --color-bg-alt: var(--color-bg-alt);
+  --color-bg-base: var(--color-bg-base);
+  --color-bg-subtle: var(--color-bg-subtle);
+  --color-bg-hover: var(--color-bg-hover);
   --color-surface: var(--color-surface);
   --color-surface-2: var(--color-surface-2);
   --color-surface-3: var(--color-surface-3);
