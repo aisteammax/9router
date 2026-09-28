@@ -42,7 +42,11 @@ export async function getPricing() {
       merged[provider] = { ...models };
     } else {
       for (const [model, pricing] of Object.entries(models)) {
-        if (!merged[provider][model]) merged[provider][model] = pricing;
+        // Overrides must beat the built-in defaults, otherwise the editor shows
+        // defaults again right after a save and the value looks lost.
+        merged[provider][model] = merged[provider][model]
+          ? { ...merged[provider][model], ...pricing }
+          : pricing;
       }
     }
   }
@@ -54,10 +58,12 @@ export async function getPricing() {
 export async function getPricingForModel(provider, model) {
   if (!model) return null;
   const userPricing = await getUserPricing();
-  if (provider && userPricing[provider]?.[model]) return userPricing[provider][model];
-  if (userPricing["standard"]?.[model]) return userPricing["standard"][model];
+  const override =
+    (provider && userPricing[provider]?.[model]) || userPricing["standard"]?.[model] || null;
   const { getPricingForModel: resolveConst } = await import("open-sse/providers/pricing.js");
-  return resolveConst(provider, model);
+  const base = resolveConst(provider, model);
+  // A partial override (e.g. only input) must still inherit the rest of the rates.
+  return override ? { ...(base || {}), ...override } : base;
 }
 
 // Atomic merge inside transaction (per-provider read-modify-write)
