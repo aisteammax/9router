@@ -595,6 +595,8 @@ export async function getUsageStats(period = "all", tzOffset = 0) {
       const promptTokens = tokens.prompt_tokens || 0;
       const completionTokens = tokens.completion_tokens || 0;
       const cachedTokens = tokens.cached_tokens || tokens.cache_read_input_tokens || 0;
+      const cacheCreationTokens = tokens.cache_creation_input_tokens || 0;
+      const nonCachedInput = Math.max(0, promptTokens - cachedTokens - cacheCreationTokens);
       const entryCost = r.cost || 0;
       const providerDisplayName = providerNodeNameMap[r.provider] || r.provider;
 
@@ -603,22 +605,36 @@ export async function getUsageStats(period = "all", tzOffset = 0) {
       stats.totalCachedTokens += cachedTokens;
       stats.totalCost += entryCost;
 
-      if (!stats.byProvider[r.provider]) stats.byProvider[r.provider] = { requests: 0, promptTokens: 0, completionTokens: 0, cachedTokens: 0, cost: 0 };
+      const pricing = await getPricingForModel(r.provider, r.model) || {};
+      const inRate = (pricing.input || 0) / 1000000;
+      const outRate = (pricing.output || 0) / 1000000;
+      const cachedRate = (pricing.cached ?? pricing.input ?? 0) / 1000000;
+      const itemInputCost = nonCachedInput * inRate;
+      const itemCachedCost = cachedTokens * cachedRate;
+      const itemOutputCost = completionTokens * outRate;
+
+      if (!stats.byProvider[r.provider]) stats.byProvider[r.provider] = { requests: 0, promptTokens: 0, completionTokens: 0, cachedTokens: 0, cost: 0, inputCost: 0, cachedCost: 0, outputCost: 0 };
       stats.byProvider[r.provider].requests++;
       stats.byProvider[r.provider].promptTokens += promptTokens;
       stats.byProvider[r.provider].completionTokens += completionTokens;
       stats.byProvider[r.provider].cachedTokens += cachedTokens;
       stats.byProvider[r.provider].cost += entryCost;
+      stats.byProvider[r.provider].inputCost += itemInputCost;
+      stats.byProvider[r.provider].cachedCost += itemCachedCost;
+      stats.byProvider[r.provider].outputCost += itemOutputCost;
 
       const modelKey = r.provider ? `${r.model} (${r.provider})` : r.model;
       if (!stats.byModel[modelKey]) {
-        stats.byModel[modelKey] = { requests: 0, promptTokens: 0, completionTokens: 0, cachedTokens: 0, cost: 0, rawModel: r.model, provider: providerDisplayName, lastUsed: r.timestamp };
+        stats.byModel[modelKey] = { requests: 0, promptTokens: 0, completionTokens: 0, cachedTokens: 0, cost: 0, inputCost: 0, cachedCost: 0, outputCost: 0, rawModel: r.model, provider: providerDisplayName, lastUsed: r.timestamp };
       }
       stats.byModel[modelKey].requests++;
       stats.byModel[modelKey].promptTokens += promptTokens;
       stats.byModel[modelKey].completionTokens += completionTokens;
       stats.byModel[modelKey].cachedTokens += cachedTokens;
       stats.byModel[modelKey].cost += entryCost;
+      stats.byModel[modelKey].inputCost += itemInputCost;
+      stats.byModel[modelKey].cachedCost += itemCachedCost;
+      stats.byModel[modelKey].outputCost += itemOutputCost;
       if (new Date(r.timestamp) > new Date(stats.byModel[modelKey].lastUsed)) stats.byModel[modelKey].lastUsed = r.timestamp;
 
       if (r.connectionId) {
