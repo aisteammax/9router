@@ -344,7 +344,7 @@ function loadDaysInRange(adapter, maxDays) {
   return adapter.all(`SELECT dateKey, data FROM usageDaily WHERE dateKey >= ? ORDER BY dateKey ASC`, [cutoffKey]);
 }
 
-export async function getUsageStats(period = "all") {
+export async function getUsageStats(period = "all", tzOffset = 0) {
   const db = await getAdapter();
 
   const [{ getProviderConnections }, { getApiKeys }, { getProviderNodes }] = await Promise.all([
@@ -575,9 +575,13 @@ export async function getUsageStats(period = "all") {
     // 24h / today: live history
     let cutoff;
     if (period === "today") {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      cutoff = startOfDay.toISOString();
+      const now = Date.now();
+      const tzOffsetMs = (Number(tzOffset) || 0) * 60000;
+      const clientNowMs = now - tzOffsetMs;
+      const clientDate = new Date(clientNowMs);
+      const clientStartOfDayMs = Date.UTC(clientDate.getUTCFullYear(), clientDate.getUTCMonth(), clientDate.getUTCDate());
+      const startTimeUtc = clientStartOfDayMs + tzOffsetMs;
+      cutoff = new Date(startTimeUtc).toISOString();
     } else {
       cutoff = new Date(Date.now() - PERIOD_MS["24h"]).toISOString();
     }
@@ -668,28 +672,42 @@ export async function getUsageStats(period = "all") {
   return stats;
 }
 
-export async function getChartData(period = "7d") {
+export async function getChartData(period = "7d", tzOffset = 0) {
   const db = await getAdapter();
   const now = Date.now();
+  const tzOffsetMs = (Number(tzOffset) || 0) * 60000;
+
+  const formatHourLabel = (utcMs) => {
+    const d = new Date(utcMs - tzOffsetMs);
+    const h = String(d.getUTCHours()).padStart(2, "0");
+    const m = String(d.getUTCMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  };
 
   if (period === "today") {
     const bucketCount = 24;
     const bucketMs = 3600000;
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const startTime = startOfDay.getTime();
-    const endTime = startTime + bucketCount * bucketMs;
-    const labelFn = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const buckets = Array.from({ length: bucketCount }, (_, i) => ({ label: labelFn(startTime + i * bucketMs), tokens: 0, cost: 0, requests: 0 }));
+    const clientNowMs = now - tzOffsetMs;
+    const clientDate = new Date(clientNowMs);
+    const clientStartOfDayMs = Date.UTC(clientDate.getUTCFullYear(), clientDate.getUTCMonth(), clientDate.getUTCDate());
+    const startTimeUtc = clientStartOfDayMs + tzOffsetMs;
+    const endTimeUtc = startTimeUtc + bucketCount * bucketMs;
+
+    const buckets = Array.from({ length: bucketCount }, (_, i) => ({
+      label: formatHourLabel(startTimeUtc + i * bucketMs),
+      tokens: 0,
+      cost: 0,
+      requests: 0,
+    }));
 
     const rows = db.all(
-      `SELECT timestamp, promptTokens, completionTokens, cost FROM usageHistory WHERE timestamp >= ?`,
-      [new Date(startTime).toISOString()]
+      `SELECT timestamp, promptTokens, completionTokens, cost FROM usageHistory WHERE timestamp >= ? AND timestamp < ?`,
+      [new Date(startTimeUtc).toISOString(), new Date(endTimeUtc).toISOString()]
     );
     for (const r of rows) {
       const t = new Date(r.timestamp).getTime();
-      if (t < startTime || t >= endTime) continue;
-      const idx = Math.floor((t - startTime) / bucketMs);
+      if (t < startTimeUtc || t >= endTimeUtc) continue;
+      const idx = Math.floor((t - startTimeUtc) / bucketMs);
       if (idx >= 0 && idx < bucketCount) {
         buckets[idx].tokens += (r.promptTokens || 0) + (r.completionTokens || 0);
         buckets[idx].cost += r.cost || 0;
@@ -702,21 +720,31 @@ export async function getChartData(period = "7d") {
   if (period === "24h") {
     const bucketCount = 24;
     const bucketMs = 3600000;
-    const labelFn = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const startTime = now - bucketCount * bucketMs;
-    const buckets = Array.from({ length: bucketCount }, (_, i) => ({ label: labelFn(startTime + i * bucketMs), tokens: 0, cost: 0, requests: 0 }));
+    const clientNowMs = now - tzOffsetMs;
+    const clientCurrentHourStartMs = Math.floor(clientNowMs / bucketMs) * bucketMs;
+    const startTimeClient = clientCurrentHourStartMs - (bucketCount - 1) * bucketMs;
+    const startTimeUtc = startTimeClient + tzOffsetMs;
+
+    const buckets = Array.from({ length: bucketCount }, (_, i) => ({
+      label: formatHourLabel(startTimeUtc + i * bucketMs),
+      tokens: 0,
+      cost: 0,
+      requests: 0,
+    }));
 
     const rows = db.all(
       `SELECT timestamp, promptTokens, completionTokens, cost FROM usageHistory WHERE timestamp >= ?`,
-      [new Date(startTime).toISOString()]
+      [new Date(startTimeUtc).toISOString()]
     );
     for (const r of rows) {
       const t = new Date(r.timestamp).getTime();
-      if (t < startTime || t > now) continue;
-      const idx = Math.min(Math.floor((t - startTime) / bucketMs), bucketCount - 1);
-      buckets[idx].tokens += (r.promptTokens || 0) + (r.completionTokens || 0);
-      buckets[idx].cost += r.cost || 0;
-      buckets[idx].requests += 1;
+      if (t < startTimeUtc || t > now) continue;
+      const idx = Math.min(Math.floor((t - startTimeUtc) / bucketMs), bucketCount - 1);
+      if (idx >= 0 && idx < bucketCount) {
+        buckets[idx].tokens += (r.promptTokens || 0) + (r.completionTokens || 0);
+        buckets[idx].cost += r.cost || 0;
+        buckets[idx].requests += 1;
+      }
     }
     return buckets;
   }
