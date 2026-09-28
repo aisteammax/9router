@@ -20,8 +20,11 @@ export async function getPricing() {
   if (cache.value && cache.expiresAt > now) return cache.value;
 
   const userPricing = await getUserPricing();
-  const { PROVIDER_PRICING } = await import("open-sse/providers/pricing.js");
+  const { PROVIDER_PRICING, MODEL_PRICING } = await import("open-sse/providers/pricing.js");
   const merged = {};
+
+  // Include general canonical models under a "standard" provider group
+  merged["standard"] = { ...MODEL_PRICING };
 
   for (const [provider, models] of Object.entries(PROVIDER_PRICING)) {
     merged[provider] = { ...models };
@@ -52,6 +55,7 @@ export async function getPricingForModel(provider, model) {
   if (!model) return null;
   const userPricing = await getUserPricing();
   if (provider && userPricing[provider]?.[model]) return userPricing[provider][model];
+  if (userPricing["standard"]?.[model]) return userPricing["standard"][model];
   const { getPricingForModel: resolveConst } = await import("open-sse/providers/pricing.js");
   return resolveConst(provider, model);
 }

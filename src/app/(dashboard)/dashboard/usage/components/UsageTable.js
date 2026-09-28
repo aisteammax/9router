@@ -53,13 +53,13 @@ function ValueCells({ item, viewMode, isSummary = false }) {
   return (
     <>
       <td className="px-6 py-3 text-right text-text-muted">
-        {isSummary && item.inputCost === undefined ? "—" : fmtCost(item.inputCost)}
-      </td>
-      <td className="px-6 py-3 text-right text-text-muted">
-        {item.cachedCost ? fmtCost(item.cachedCost) : "—"}
-      </td>
-      <td className="px-6 py-3 text-right text-text-muted">
-        {isSummary && item.outputCost === undefined ? "—" : fmtCost(item.outputCost)}
+        {isSummary && item.inputCost === undefined ? "—" : (item.inputCost === 0 && (item.promptTokens || 0) > 0 ? "<$0.01" : fmtCost(item.inputCost))}
+        </td>
+        <td className="px-6 py-3 text-right text-text-muted">
+        {item.cachedCost ? fmtCost(item.cachedCost) : (item.cachedTokens ? "<$0.01" : "—")}
+        </td>
+        <td className="px-6 py-3 text-right text-text-muted">
+        {isSummary && item.outputCost === undefined ? "—" : (item.outputCost === 0 && (item.completionTokens || 0) > 0 ? "<$0.01" : fmtCost(item.outputCost))}
       </td>
       <td className="px-6 py-3 text-right font-medium text-warning">
         {fmtCost(item.totalCost || item.cost)}
