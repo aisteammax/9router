@@ -28,4 +28,8 @@ export default {
   },
   modelsFetcher: { url: "https://openrouter.ai/api/v1/models", type: "openrouter-free" },
   passthroughModels: true,
+  features: {
+    usage: true,
+    usageApikey: true,
+  },
 };

@@ -685,6 +685,24 @@ export function parseQuotaData(provider, data) {
         }
         break;
 
+      case "openrouter":
+      case "openrouter-free":
+        if (data.quotas) {
+          Object.entries(data.quotas).forEach(([name, quota]) => {
+            normalizedQuotas.push({
+              name,
+              used: quota.used || 0,
+              total: quota.total || 0,
+              resetAt: quota.resetAt || null,
+              remainingPercentage: quota.remainingPercentage,
+              isCreditBalance: quota.isCreditBalance === true,
+              unlimited: quota.unlimited === true,
+              currency: quota.currency || "USD",
+            });
+          });
+        }
+        break;
+
       case "groq":
         // Requests/Tokens rate-limit windows from response headers — absolute
         // used/total (calculatePercentage derives the bar), like Codex/Kiro.

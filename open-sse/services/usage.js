@@ -22,6 +22,7 @@ import { getXiaomiMimoUsage } from "./usage/xiaomi-mimo.js";
 import { resolveQoderCredentials } from "./qoderModels.js";
 import { getGlmUsage } from "./usage/glm.js";
 import { getCommandCodeUsage } from "./usage/commandcode.js";
+import { getOpenrouterUsage } from "./usage/openrouter.js";
 import {
   getIflowUsage,
   getOllamaUsage,
@@ -62,6 +63,8 @@ const USAGE_HANDLERS = {
   zed: (c) => getZedUsage(c.accessToken, c.providerSpecificData, c.proxyOptions),
   "xiaomi-mimo": (c) => getXiaomiMimoUsage(c.accessToken, c.providerSpecificData, c.proxyOptions),
   commandcode: (c) => getCommandCodeUsage(c.apiKey, c.proxyOptions),
+  openrouter: (c) => getOpenrouterUsage(c.apiKey, c.proxyOptions),
+  "openrouter-free": (c) => getOpenrouterUsage(c.apiKey, c.proxyOptions),
 };
 
 // Qoder intl/CN share one usage path: PATs must be exchanged to a job token
