@@ -150,7 +150,7 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
                                 <td key={field} className="px-3 py-2">
                                   <input
                                     type="number"
-                                    step="0.01"
+                                    step="any"
                                     min="0"
                                     value={pricingData[provider][model][field] || 0}
                                     onChange={(e) => handlePricingChange(provider, model, field, e.target.value)}
