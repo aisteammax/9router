@@ -72,6 +72,7 @@ import p68 from "./opencode-go.js";
 import p68z from "./opencode-zen.js";
 import p69 from "./opencode.js";
 import p70 from "./openrouter.js";
+import p70f from "./openrouter-free.js";
 import p71 from "./perplexity-web.js";
 import p72 from "./perplexity.js";
 import p73 from "./perplexity-agent.js";
@@ -205,6 +206,7 @@ export default [
   p68z,
   p69,
   p70,
+  p70f,
   p71,
   p72,
   p73,

@@ -14,7 +14,7 @@ export default {
       apiKeyUrl: "https://openrouter.ai/settings/keys",
     },
   },
-  category: "freeTier",
+  category: "apikey",
   authType: "apikey",
   authModes: ["apikey"],
   transport: {
@@ -72,6 +72,6 @@ export default {
     baseUrl: "https://openrouter.ai/api/v1/videos",
     headers: {"HTTP-Referer":"https://endpoint-proxy.local","X-Title":"Endpoint Proxy"},
   },
-  modelsFetcher: { url: "https://openrouter.ai/api/v1/models", type: "openrouter-free" },
+  modelsFetcher: { url: "https://openrouter.ai/api/v1/models", type: "openrouter" },
   passthroughModels: true,
 };
