@@ -134,13 +134,13 @@ export default function UsageChart({ period = "7d", refreshKey }) {
               formatter={(value) => [cfg.formatter(value), cfg.label]}
             />
             <Area
-              type="linear"
+              type="monotone"
               dataKey={cfg.dataKey}
               stroke={cfg.color}
               strokeWidth={2}
               fill={`url(#${cfg.gradId})`}
               dot={false}
-              activeDot={{ r: 4 }}
+              activeDot={{ r: 4, strokeWidth: 0 }}
             />
           </AreaChart>
         </ResponsiveContainer>

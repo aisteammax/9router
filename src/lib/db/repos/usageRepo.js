@@ -685,8 +685,8 @@ export async function getChartData(period = "7d", tzOffset = 0) {
   };
 
   if (period === "today") {
-    const bucketCount = 24;
-    const bucketMs = 3600000;
+    const bucketCount = 48;
+    const bucketMs = 1800000;
     const clientNowMs = now - tzOffsetMs;
     const clientDate = new Date(clientNowMs);
     const clientStartOfDayMs = Date.UTC(clientDate.getUTCFullYear(), clientDate.getUTCMonth(), clientDate.getUTCDate());
@@ -718,8 +718,8 @@ export async function getChartData(period = "7d", tzOffset = 0) {
   }
 
   if (period === "24h") {
-    const bucketCount = 24;
-    const bucketMs = 3600000;
+    const bucketCount = 48;
+    const bucketMs = 1800000;
     const clientNowMs = now - tzOffsetMs;
     const clientCurrentHourStartMs = Math.floor(clientNowMs / bucketMs) * bucketMs;
     const startTimeClient = clientCurrentHourStartMs - (bucketCount - 1) * bucketMs;
